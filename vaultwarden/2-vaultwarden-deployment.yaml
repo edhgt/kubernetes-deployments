@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vaultwarden
+  namespace: namespace
+  labels:
+    app: vaultwarden
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vaultwarden
+  template:
+    metadata:
+      labels:
+        app: vaultwarden
+    spec:
+      containers:
+        - env:
+            - name: ADMIN_TOKEN
+              value: "argon2idv=19m=65540,t=3,p=4Xg/8lzkBP9C7BpUVzqueVm70UzVafI1th/qyftp+zeIJkQn/J31+be+c2WfqjpM3zc0YkY7aj+MBVNQruBweCY"
+            - name: DOMAIN
+              value: https://vault.com.gt
+            - name: ROCKET_TLS
+              value: '{certs="/ssl/vault.crt",key="/ssl/vault.key"}'
+            - name: ROCKET_PORT
+              value: "443"
+            - name: SIGNUPS_ALLOWED
+              value: "false"
+          image: vaultwarden/server:latest
+          name: vaultwarden
+          ports:
+            - containerPort: 80
+              protocol: TCP
+            - containerPort: 443
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /data
+              name: vaultwarden-data
+            - mountPath: "/ssl"
+              name: ssl-secret
+
+      volumes:
+        - name: vaultwarden-data
+          persistentVolumeClaim:
+            claimName: pvc-vaultwarden
+        - name: ssl-secret
+          secret:
+            secretName: cert-ssl
+            defaultMode: 0400
+            items:
+              - key: tls.crt
+                path: vault.crt
+              - key: tls.key
+                path: vault.key
