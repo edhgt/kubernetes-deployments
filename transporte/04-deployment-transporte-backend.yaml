@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transporte-backend
+  namespace: mineco
+  labels:
+    app: transporte
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: transporte
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: transporte
+        tier: backend
+    spec:
+      containers:
+        - name: backend
+          image: minecodev/laravel-php:8.1-fpm-sqlsrv
+          workingDir: /var/www/html
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: app-storage
+              mountPath: /var/www/html
+              subPath: transporte-backend
+            - name: php-config-volume
+              mountPath: /usr/local/etc/php/conf.d/php-custom.ini
+              subPath: php-custom.ini
+          resources:
+            requests:
+              cpu: 300m
+              memory: 700Mi
+            limits:
+              cpu: 1000m
+              memory: 1400Mi
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          env:
+            - name: PHP_FPM_PM_MAX_CHILDREN
+              value: "35"
+            - name: PHP_FPM_PM_START_SERVERS
+              value: "10"
+            - name: PHP_FPM_PM_MIN_SPARE_SERVERS
+              value: "5"
+            - name: PHP_FPM_PM_MAX_SPARE_SERVERS
+              value: "15"
+      volumes:
+        - name: app-storage
+          persistentVolumeClaim:
+            claimName: pvc-transporte-mineco
+        - name: php-config-volume
+          configMap:
+            name: php-config-transporte

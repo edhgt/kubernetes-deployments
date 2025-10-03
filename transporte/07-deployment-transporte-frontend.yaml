@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transporte-frontend
+  namespace: mineco
+  labels:
+    app: transporte-mineco
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transporte-mineco
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        app: transporte-mineco
+        tier: frontend
+    spec:
+      containers:
+      - name: transporte-frontend
+        image: nginx:1.28.0-alpine
+        workingDir: /var/www/html
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app-storage
+          mountPath: /var/www/html
+          subPath: transporte-frontend/dist
+        - name: transporte-frontend-nginx-config-volume
+          mountPath: /etc/nginx/nginx.conf
+          subPath: nginx.conf
+        - name: ssl-secret
+          mountPath: "/etc/ssl/private"
+      volumes:
+      - name: app-storage
+        persistentVolumeClaim:
+          claimName: pvc-transporte-mineco
+      - name: transporte-frontend-nginx-config-volume
+        configMap:
+          name: transporte-frontend-nginx-config
+      - name: ssl-secret
+        secret:
+          secretName: cert-mineco
+          defaultMode: 0400
+          items:
+            - key: tls.crt
+              path: mineco.crt
+            - key: tls.key
+              path: mineco.key

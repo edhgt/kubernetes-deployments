@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: presupuesto-frontend-service
+  namespace: mineco
+spec:
+  type: LoadBalancer
+  externalIPs:
+    - 128.5.4.56
+  selector:
+    app: presupuesto-mineco
+    tier: frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 443
+      protocol: TCP
