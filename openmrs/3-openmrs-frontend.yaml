@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmrs-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmrs-frontend
+  template:
+    metadata:
+      labels:
+        app: openmrs-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: openmrs/openmrs-esm-frontend:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/nginx/html/env-config.js
+              subPath: env-config.js
+      volumes:
+        - name: config-volume
+          configMap:
+            name: openmrs-frontend-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmrs-frontend
+spec:
+  selector:
+    app: openmrs-frontend
+  ports:
+    - port: 80
+      targetPort: 80
+  type: LoadBalancer
+

@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmrs-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmrs-backend
+  template:
+    metadata:
+      labels:
+        app: openmrs-backend
+    spec:
+      containers:
+        - name: openmrs
+          image: openmrs/openmrs-reference-application:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: DB_HOST
+              value: "128.5.101.69"
+            - name: DB_DATABASE
+              value: "openmrs"
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: openmrs-db-secret
+                  key: username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: openmrs-db-secret
+                  key: password
+            - name: DB_AUTO_UPDATE
+              value: "true"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openmrs-db-secret
+type: Opaque
+stringData:
+  username: root
+  password: abc123
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: openmrs-backend
+spec:
+  selector:
+    app: openmrs-backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+

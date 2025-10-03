@@ -1,0 +1,32 @@
+# openmrs-backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openmrs-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openmrs-backend
+  template:
+    metadata:
+      labels:
+        app: openmrs-backend
+    spec:
+      containers:
+        - name: openmrs
+          image: openmrs/openmrs-reference-application-distro:latest
+          env:
+            - name: DB_DATABASE
+              value: "openmrs"
+            - name: DB_HOST
+              value: ""
+            - name: DB_USERNAME
+              value: "openmrs"
+            - name: DB_PASSWORD
+              value: "openmrs"
+            - name: DB_CREATE_TABLES
+              value: "true"
+          ports:
+            - containerPort: 8080
+

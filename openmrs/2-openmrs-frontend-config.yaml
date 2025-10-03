@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openmrs-frontend-config
+data:
+  env-config.js: |
+    window.OPENMRS_CONFIG = {
+      backendUrl: "http://128.5.101.69:8080/openmrs"
+    };
+
